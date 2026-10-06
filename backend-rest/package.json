@@ -1,0 +1,19 @@
+{
+  "name": "fittrack-backend-rest",
+  "version": "1.0.0",
+  "description": "Backend REST API para FitTrack - Practica 1 ADI",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test tests/**/*.test.js"
+  },
+  "keywords": ["express", "rest", "fittrack", "sqlite", "jwt"],
+  "author": "Iván Lafont Jabazin (ilj8)",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.0.1"
+  }
+}
