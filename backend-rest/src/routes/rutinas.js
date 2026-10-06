@@ -286,4 +286,167 @@ router.delete('/:id', authenticateToken, (req, res) => {
   res.status(204).end();
 });
 
+// ==========================================
+// SUB-RECURSO SECUNDARIO: /api/rutinas/:id/ejercicios
+// ==========================================
+
+/**
+ * GET /api/rutinas/:id/ejercicios
+ * Listar ejercicios asignados a una rutina
+ */
+router.get('/:id/ejercicios', optionalAuth, (req, res) => {
+  const rutinaId = parseInt(req.params.id, 10);
+  if (isNaN(rutinaId)) {
+    return res.status(400).json({ error: 'El id de la rutina debe ser un número entero' });
+  }
+
+  const db = getDB();
+  const rutinaStmt = db.prepare('SELECT * FROM rutinas WHERE id = ?');
+  const rutina = rutinaStmt.get(rutinaId);
+
+  if (!rutina) {
+    return res.status(404).json({ error: 'Rutina no encontrada' });
+  }
+
+  if (rutina.es_publica === 0) {
+    if (!req.usuario || req.usuario.id !== rutina.usuario_id) {
+      return res.status(403).json({ error: 'No tienes permisos para ver los ejercicios de esta rutina privada' });
+    }
+  }
+
+  const listStmt = db.prepare(`
+    SELECT 
+      re.id as id_rutina_ejercicio,
+      re.rutina_id,
+      re.ejercicio_id,
+      re.series_objetivo,
+      re.repeticiones_objetivo,
+      re.orden,
+      e.nombre,
+      e.grupo_muscular,
+      e.equipamiento
+    FROM rutina_ejercicios re
+    JOIN ejercicios e ON re.ejercicio_id = e.id
+    WHERE re.rutina_id = ?
+    ORDER BY re.orden ASC, re.id ASC
+  `);
+
+  const ejercicios = listStmt.all(rutinaId);
+  res.json(ejercicios);
+});
+
+/**
+ * POST /api/rutinas/:id/ejercicios
+ * Asignar un ejercicio a una rutina con series y repeticiones objetivo (solo propietario)
+ */
+router.post('/:id/ejercicios', authenticateToken, (req, res) => {
+  const rutinaId = parseInt(req.params.id, 10);
+  if (isNaN(rutinaId)) {
+    return res.status(400).json({ error: 'El id de la rutina debe ser un número entero' });
+  }
+
+  const db = getDB();
+  const rutinaStmt = db.prepare('SELECT * FROM rutinas WHERE id = ?');
+  const rutina = rutinaStmt.get(rutinaId);
+
+  if (!rutina) {
+    return res.status(404).json({ error: 'Rutina no encontrada' });
+  }
+
+  // Restricción de acceso: Solo el dueño de la rutina puede añadirle ejercicios
+  if (rutina.usuario_id !== req.usuario.id) {
+    return res.status(403).json({ error: 'No tienes permiso para modificar los ejercicios de una rutina de otro usuario' });
+  }
+
+  const { ejercicio_id, series_objetivo, repeticiones_objetivo, orden } = req.body || {};
+
+  const ejId = parseInt(ejercicio_id, 10);
+  const series = parseInt(series_objetivo, 10);
+  const reps = parseInt(repeticiones_objetivo, 10);
+  const ordenNum = orden !== undefined ? parseInt(orden, 10) : 1;
+
+  if (isNaN(ejId)) {
+    return res.status(400).json({ error: 'Debe especificar un ejercicio_id válido' });
+  }
+
+  if (isNaN(series) || series <= 0) {
+    return res.status(400).json({ error: 'Las series objetivo deben ser un número entero mayor que 0' });
+  }
+
+  if (isNaN(reps) || reps <= 0) {
+    return res.status(400).json({ error: 'Las repeticiones objetivo deben ser un número entero mayor que 0' });
+  }
+
+  // Verificar que el ejercicio existe en el catálogo
+  const ejStmt = db.prepare('SELECT * FROM ejercicios WHERE id = ?');
+  const ejercicio = ejStmt.get(ejId);
+  if (!ejercicio) {
+    return res.status(404).json({ error: 'El ejercicio especificado no existe en el catálogo' });
+  }
+
+  const insertStmt = db.prepare(`
+    INSERT INTO rutina_ejercicios (rutina_id, ejercicio_id, series_objetivo, repeticiones_objetivo, orden)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  const result = insertStmt.run(rutinaId, ejId, series, reps, isNaN(ordenNum) ? 1 : ordenNum);
+  const asignacionId = Number(result.lastInsertRowid);
+
+  const getStmt = db.prepare(`
+    SELECT 
+      re.id as id_rutina_ejercicio,
+      re.rutina_id,
+      re.ejercicio_id,
+      re.series_objetivo,
+      re.repeticiones_objetivo,
+      re.orden,
+      e.nombre,
+      e.grupo_muscular,
+      e.equipamiento
+    FROM rutina_ejercicios re
+    JOIN ejercicios e ON re.ejercicio_id = e.id
+    WHERE re.id = ?
+  `);
+  const asignado = getStmt.get(asignacionId);
+
+  res.status(201).json(asignado);
+});
+
+/**
+ * DELETE /api/rutinas/:id/ejercicios/:id_ejercicio_rutina
+ * Eliminar un ejercicio asignado a una rutina (solo propietario)
+ */
+router.delete('/:id/ejercicios/:id_ejercicio_rutina', authenticateToken, (req, res) => {
+  const rutinaId = parseInt(req.params.id, 10);
+  const asignacionId = parseInt(req.params.id_ejercicio_rutina, 10);
+
+  if (isNaN(rutinaId) || isNaN(asignacionId)) {
+    return res.status(400).json({ error: 'Los identificadores deben ser números enteros' });
+  }
+
+  const db = getDB();
+  const rutinaStmt = db.prepare('SELECT * FROM rutinas WHERE id = ?');
+  const rutina = rutinaStmt.get(rutinaId);
+
+  if (!rutina) {
+    return res.status(404).json({ error: 'Rutina no encontrada' });
+  }
+
+  // Restricción de acceso: Solo el dueño de la rutina puede quitar ejercicios
+  if (rutina.usuario_id !== req.usuario.id) {
+    return res.status(403).json({ error: 'No tienes permiso para eliminar ejercicios de una rutina de otro usuario' });
+  }
+
+  const asigStmt = db.prepare('SELECT * FROM rutina_ejercicios WHERE id = ? AND rutina_id = ?');
+  const asignacion = asigStmt.get(asignacionId, rutinaId);
+
+  if (!asignacion) {
+    return res.status(404).json({ error: 'El ejercicio asignado no fue encontrado en esta rutina' });
+  }
+
+  const deleteStmt = db.prepare('DELETE FROM rutina_ejercicios WHERE id = ?');
+  deleteStmt.run(asignacionId);
+
+  res.status(204).end();
+});
+
 export default router;

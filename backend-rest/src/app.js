@@ -4,6 +4,7 @@ import { getDB } from './db/database.js';
 import authRouter from './routes/auth.js';
 import usuariosRouter from './routes/usuarios.js';
 import rutinasRouter from './routes/rutinas.js';
+import ejerciciosRouter from './routes/ejercicios.js';
 
 export function createApp(dbInstance = null) {
   const app = express();
@@ -33,6 +34,7 @@ export function createApp(dbInstance = null) {
   app.use('/api/auth', authRouter);
   app.use('/api/usuarios', usuariosRouter);
   app.use('/api/rutinas', rutinasRouter);
+  app.use('/api/ejercicios', ejerciciosRouter);
 
   // Manejo de rutas no encontradas 404
   app.use((req, res, next) => {
