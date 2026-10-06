@@ -75,4 +75,4 @@ Desarrollar el segundo backend del proyecto utilizando la plataforma Backend as 
 
 ## COMMITS RELACIONADOS
 
-- Pendiente de asignación tras el commit de la iteración.
+- `21a7161` - Iteración 05: Segundo Backend con Supabase BaaS, capa de servicios, esquema RLS y pruebas

@@ -88,4 +88,4 @@ Implementar todas las operaciones CRUD sobre el recurso principal del sistema (*
 
 ## COMMITS RELACIONADOS
 
-- Pendiente de asignación tras el commit de la iteración.
+- `62f3356` - Iteración 03: CRUD de Rutinas, paginación, filtros de búsqueda y permisos de acceso

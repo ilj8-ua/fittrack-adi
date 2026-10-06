@@ -73,4 +73,4 @@ Implementar las operaciones de gestión para el recurso secundario (**Ejercicios
 
 ## COMMITS RELACIONADOS
 
-- Pendiente de asignación tras el commit de la iteración.
+- `cce8c60` - Iteración 04: Recurso secundario de ejercicios y asignación a rutinas

@@ -58,4 +58,4 @@ Establecer la estructura base del proyecto, configurar los módulos de Node.js, 
 
 ## COMMITS RELACIONADOS
 
-- Pendiente de asignación tras el commit de la iteración.
+- `9fbdfa6` - Iteración 01: Setup del proyecto, arquitectura y base de datos SQLite

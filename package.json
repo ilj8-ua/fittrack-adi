@@ -1,0 +1,14 @@
+{
+  "name": "fittrack-practica-1-adi",
+  "version": "1.0.0",
+  "description": "Práctica 1 - Desarrollo del backend de la aplicación web (FitTrack)",
+  "author": "Iván Lafont Jabazin (ilj8)",
+  "type": "module",
+  "scripts": {
+    "test": "npm --prefix backend-rest test && npm --prefix backend-supabase test",
+    "test:rest": "npm --prefix backend-rest test",
+    "test:supabase": "npm --prefix backend-supabase test",
+    "start:rest": "npm --prefix backend-rest start",
+    "dev:rest": "npm --prefix backend-rest run dev"
+  }
+}

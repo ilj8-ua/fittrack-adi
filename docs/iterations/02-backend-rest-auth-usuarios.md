@@ -82,4 +82,4 @@ Implementar el sistema completo de autenticación y gestión de perfiles de usua
 
 ## COMMITS RELACIONADOS
 
-- Pendiente de asignación tras el commit de la iteración.
+- `fc120b6` - Iteración 02: Autenticación JWT y gestión de perfiles de usuario
