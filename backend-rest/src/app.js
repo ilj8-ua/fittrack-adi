@@ -3,6 +3,7 @@ import cors from 'cors';
 import { getDB } from './db/database.js';
 import authRouter from './routes/auth.js';
 import usuariosRouter from './routes/usuarios.js';
+import rutinasRouter from './routes/rutinas.js';
 
 export function createApp(dbInstance = null) {
   const app = express();
@@ -31,6 +32,7 @@ export function createApp(dbInstance = null) {
   // Montaje de rutas
   app.use('/api/auth', authRouter);
   app.use('/api/usuarios', usuariosRouter);
+  app.use('/api/rutinas', rutinasRouter);
 
   // Manejo de rutas no encontradas 404
   app.use((req, res, next) => {
