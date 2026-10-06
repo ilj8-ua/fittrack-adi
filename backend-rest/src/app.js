@@ -1,13 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import { getDB } from './db/database.js';
+import authRouter from './routes/auth.js';
+import usuariosRouter from './routes/usuarios.js';
 
 export function createApp(dbInstance = null) {
   const app = express();
 
   // Asegurar que la base de datos está inicializada
   if (dbInstance) {
-    // Si se pasa una instancia de prueba (ej. :memory:)
+    // Si se pasa una instancia de prueba
   } else {
     getDB();
   }
@@ -15,12 +17,6 @@ export function createApp(dbInstance = null) {
   // Middlewares globales
   app.use(cors());
   app.use(express.json());
-
-  // Log simple de peticiones
-  app.use((req, res, next) => {
-    // Middleware de logging de peticiones
-    next();
-  });
 
   // Ruta de salud de la API
   app.get('/api/health', (req, res) => {
@@ -31,6 +27,10 @@ export function createApp(dbInstance = null) {
       timestamp: new Date().toISOString()
     });
   });
+
+  // Montaje de rutas
+  app.use('/api/auth', authRouter);
+  app.use('/api/usuarios', usuariosRouter);
 
   // Manejo de rutas no encontradas 404
   app.use((req, res, next) => {
