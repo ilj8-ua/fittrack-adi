@@ -1,0 +1,24 @@
+body {
+  max-width: 36rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  font-family: sans-serif;
+  line-height: 1.5;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+form { margin-bottom: 1rem; }
+form label { display: block; }
+input, button { font: inherit; }
+form input { max-width: 100%; box-sizing: border-box; }
+button { margin: 0.25rem; }
+ul { padding-left: 1.5rem; }
+li { margin: 0.5rem 0; overflow-wrap: anywhere; }
+.comprado { text-decoration: line-through; }
+#mensaje { min-height: 1.5em; }

@@ -1,0 +1,499 @@
+Metodología SDD para las prácticas de ADI
+1. Objetivo
+En las prácticas vamos a trabajar con una metodología de desarrollo de tipo SDD: Specification-Driven Development, o desarrollo dirigido por especificaciones. La idea principal es sencilla:
+
+Antes de pedir código a una IA o empezar a programar, hay que tener claro qué se quiere construir, cómo se va a construir y cómo se comprobará que funciona.
+
+Se trata de evitar el desarrollo improvisado del tipo:
+
+“Le pido a la IA que me haga cosas hasta que parezca que funciona.”
+
+Es decir, en esta asignatura se permite y promueve el uso de IA, pero cada estudiante deberá demostrar que dirige el proceso de desarrollo y que revisa y entiende el código que entrega.
+
+Nota: SDD es una metodología genérica, pero no concreta los documentos específicos que hay que generar ni determina exactamente el flujo de trabajo. Aquí vamos a seguir una versión simplificada, de “andar por casa”. No obstante hay versiones mucho más sofisticadas, y herramientas software que las soportan específicamente, como Github Spec Kit, Amazon Kiro u OpenSpec.
+
+2. Principio básico
+Cada funcionalidad importante del proyecto se desarrollará como una iteración.
+
+Una iteración puede corresponder a una feature o funcionalidad como:
+
+crear la estructura inicial del proyecto;
+implementar login;
+listar recursos;
+crear un recurso;
+editar y borrar recursos;
+añadir filtros;
+validar formularios;
+gestionar errores;
+mejorar la interfaz;
+añadir permisos;
+añadir pruebas.
+Para cada iteración habrá un único documento .md con varias secciones. Como veremos luego, además hay documentos que describen el proyecto globalmente.
+
+Aquí por ejemplo tendríamos 3 iteraciones:
+
+docs/iterations/01-login.md
+docs/iterations/02-listado-recursos.md
+docs/iterations/03-edicion-borrado.md
+📋
+Cada documento de iteración incluirá las secciones:
+
+## SPEC
+## PLAN
+## TEST_PLAN
+## AI_LOG
+## COMMITS RELACIONADOS
+📋
+Con posterioridad iremos describiendo el contenido de cada sección.
+
+3. Estructura de la documentación
+La estructura mínima de documentación será:
+
+docs/
+├── PROJECT_SPEC.md
+├── ARCHITECTURE.md
+├── AI_SUMMARY.md
+└── iterations/
+    ├── 01-setup.md
+    ├── 02-login.md
+    ├── 03-listado.md
+    ├── 04-crud.md
+    └── 05-mejoras.md
+📋
+Los tres primeros documentos son generales de todo el proyecto, en iterations están los de cada iteración. En los siguientes apartados explicamos cada uno de ellos.
+
+Además, el proyecto tendrá el código fuente habitual (aquí se pone un ejemplo, no todos los proyectos tendrán un package.json)
+
+src/
+tests/
+README.md
+package.json
+📋
+4. Documento PROJECT_SPEC.md
+Este documento describe el proyecto completo a alto nivel. Explica funcionalidades y describe el modelo de datos sin entrar en tecnologías concretas.
+
+Debe responder a preguntas como:
+
+¿Qué aplicación se va a desarrollar?
+¿Qué problema resuelve?
+¿Qué tipo de usuarios tendrá?
+¿Cuál es el recurso principal?
+¿Cuáles son los recursos secundarios?
+¿Qué relación hay entre los recursos?
+¿Qué funcionalidades principales tendrá?
+¿Qué queda fuera del alcance?
+Ejemplo:
+
+# PROJECT_SPEC
+
+## Descripción
+
+Vamos a desarrollar una aplicación para gestionar una colección personal de películas.
+
+## Recurso principal
+
+Películas. Además habrá usuarios de la aplicación.
+
+## Recursos secundarios
+
+Géneros, actores
+
+## Relación
+
+Cada película pertenece a un género. Una película tendrá un reparto de muchos actores, un actor puede estar en muchas películas.
+
+## Funcionalidades principales
+
+- Listar películas.
+- Ver detalles de una película.
+- Crear una película.
+- Editar una película.
+- Borrar una película.
+- Listar géneros.
+- Asignar género a una película.
+- Filtrar películas por género.
+
+## Fuera de alcance
+
+- Recomendaciones automáticas.
+- Valoraciones de otros usuarios.
+- Subida de imágenes.
+📋
+Este documento puede evolucionar durante el proyecto, pero no debería cambiar constantemente de arriba a abajo.
+
+5. Documento ARCHITECTURE.md
+Este documento describe las decisiones técnicas generales.
+
+Debe incluir cosas como:
+
+framework/plataforma utilizado en backend y frontend;
+estructura de carpetas;
+colecciones/tablas del backend;
+capa de servicios del backend o rutas si es un API REST;
+stores o gestión de estado en frontend;
+convenciones de nombres;
+decisiones importantes de diseño. …
+Este documento no tiene que ser excesivamente largo, ni tiene por qué tener todos los datos anteriores, por ejemplo puede no usar un framework en frontend, pero debe permitir entender cómo está organizado el proyecto. Podéis incluir diagramas con el esquema de datos.
+
+El documento va a evolucionar durante el proyecto conforme vayamos avanzando en la asignatura, ya que por ejemplo al principio no vemos todavía frontend. También puede cambiar si comprobamos que decisiones pasadas sobre la arquitectura estaban equivocadas.
+
+# ARCHITECTURE
+
+## Backend
+
+- API REST con Express
+- La autenticación se hará con tokens JWT
+
+## Frontend
+
+- Todavía no decidido
+
+## Colecciones
+
+### movies
+
+Campos:
+- id
+- title
+- year
+- description
+- genre
+
+### genres
+
+Campos:
+- id
+- name
+
+### actors
+
+Campos:
+- id
+- sex
+- name
+- born_date
+
+### movie_actor
+
+Campos:
+- id_movie
+- id_actor
+
+## Rutas principales de la API REST
+
+- /
+- /movies
+- /movies/:id
+- /movies/new
+- /movies/:id/edit
+- ...
+
+## Estructura de carpetas
+
+- src/services: acceso al backend
+- frontend: por determinar
+
+📋
+6. Documento AI_SUMMARY.md
+Es un resumen global del uso de IA. Este documento puede ir evolucionando conforme avance el proyecto.
+
+Ejemplo:
+
+# AI_SUMMARY
+
+## Herramientas usadas
+
+- ChatGPT
+- GitHub Copilot
+- OpenCode con qwen2.5-coder:7b
+
+## Uso principal
+
+- Planificación de iteraciones.
+- Generación inicial de algunos componentes.
+- Corrección de errores.
+- Generación de pruebas manuales.
+
+## Partes modificadas manualmente
+
+- Configuración del backend.
+- Nombres de colecciones.
+- Manejo de errores.
+- Validaciones de formularios.
+
+## Problemas encontrados con la IA
+
+- Inventó nombres de campos.
+- Propuso funcionalidades fuera de alcance.
+- Generó código demasiado complejo para una vista sencilla.
+- No tuvo en cuenta una regla de validación del backend.
+
+## Valoración personal
+
+La IA fue útil para empezar algunas partes, pero fue necesario revisar y corregir el código generado.
+📋
+Este documento no tiene que ser muy largo. Su objetivo es dar una visión general del uso de IA en el proyecto.
+
+7. Documento de iteración
+Cada iteración tendrá un único documento dentro de docs/iterations/.
+
+Ejemplo:
+
+docs/iterations/03-listado-peliculas.md
+📋
+cada feature tendrá su propia especificación, plan, pruebas, registro de uso de IA y commits realizados en el repositorio. Así, cada documento tendrá esta estructura que vamos a ir explicando:
+
+# Iteración 03 - Listado de películas
+
+## SPEC
+
+## PLAN
+
+## TEST_PLAN
+
+## AI_LOG
+
+## COMMITS RELACIONADOS
+📋
+7.1 Sección SPEC
+La sección SPEC describe qué se quiere conseguir en esa iteración.
+
+Debe estar escrita antes de implementar la funcionalidad. El/la estudiante es el/la que debe escribir esta sección, aunque la IA la puede revisar.
+
+Debe incluir:
+
+objetivo de la iteración;
+requisitos funcionales;
+requisitos técnicos relevantes;
+qué queda fuera del alcance.
+Ejemplo:
+
+## SPEC
+
+### Objetivo
+
+Implementar el listado de películas.
+
+### Requisitos
+
+- Mostrar todas las películas guardadas en el backend.
+- Mostrar título, año y género de cada película.
+- Permitir acceder al detalle de una película.
+- Mostrar un mensaje si no hay películas.
+- Mostrar un mensaje de error si falla la carga.
+
+### Fuera de alcance
+
+- Crear películas.
+- Editar películas.
+- Borrar películas.
+- Filtrar por género.
+📋
+La SPEC puede corregirse o ajustarse durante la iteración cuando se detecten errores, ambigüedades o cambios de alcance.Los cambios relevantes se anotarán brevemente junto con su motivo.
+
+7.2. Sección PLAN
+La sección PLAN explica cómo se va a implementar la funcionalidad.
+
+Puede ser propuesta por la IA, pero debe ser revisada por el estudiante antes de generar código.
+
+Debe indicar:
+
+archivos que se van a crear o modificar;
+pasos de implementación;
+decisiones relevantes;
+riesgos o dudas.
+Ejemplo:
+
+## PLAN
+
+1. Crear `src/services/movieService.js` para centralizar las llamadas al backend.
+2. Crear o completar `src/views/MovieListView.vue`.
+3. Añadir estado de carga `loading`.
+4. Añadir estado de error `error`.
+5. Obtener las películas al montar la vista.
+6. Mostrar un mensaje si la lista está vacía.
+7. Añadir enlaces al detalle de cada película.
+📋
+Antes de implementar, el estudiante debe revisar que el plan tiene sentido.
+
+Si la IA propone algo fuera de alcance, debe rechazarse o corregirse.
+
+Ejemplo:
+
+La IA propuso añadir filtros por género en esta iteración, pero se ha descartado porque los filtros se harán en una iteración posterior.
+📋
+7.3 Sección TEST_PLAN
+La sección TEST_PLAN explica cómo se comprobará que la funcionalidad funciona correctamente. Puede ser propuesta por la IA, pero debe ser revisada por el estudiante
+
+Puede incluir pruebas manuales, pruebas automáticas o ambas.
+
+Ejemplo de pruebas manuales:
+
+## TEST_PLAN
+
+| Caso | Resultado esperado | Resultado obtenido |
+|---|---|---|
+| Hay películas en el backend | Se muestra la lista de películas | |
+| No hay películas | Se muestra mensaje de lista vacía | |
+| Falla la conexión con el backend | Se muestra mensaje de error | |
+| Se pulsa una película | Se navega al detalle | |
+📋
+La columna “Resultado obtenido” se rellenará después de probar.
+
+Si se hacen tests automáticos, se indicará:
+
+### Tests automáticos
+
+- `MovieListView.test.js`: comprueba que se muestran las películas.
+- `movieService.test.js`: comprueba que se llama correctamente al backend.
+📋
+No todas las iteraciones tienen que tener tests automáticos, pero todas deben tener algún plan de validación.
+
+7.4. Sección AI_LOG
+La sección AI_LOG resume cómo se ha usado la IA en esa iteración.
+
+No hace falta copiar conversaciones completas, pero sí registrar las interacciones importantes.
+
+Debe incluir:
+
+herramienta usada;
+modelo, si se conoce;
+para qué se ha usado;
+prompts importantes;
+qué se aceptó;
+qué se rechazó;
+si se corrigió algo manualmente.
+Ejemplo:
+
+## AI_LOG
+
+### Herramienta usada
+
+- Herramienta: OpenCode
+- Modelo: qwen2.5-coder:7b
+- Tipo: modelo local
+
+### Uso realizado
+
+Se usó IA para:
+
+- proponer el plan inicial;
+- generar una primera versión de `movieService.js`;
+- revisar el manejo de errores.
+
+### Prompt importante 1
+
+Lee la sección SPEC de esta iteración y propón un plan.
+No modifiques código todavía.
+Limita la solución al listado de películas.
+
+### Resultado
+
+La IA propuso crear un servicio para acceder al backend y una vista para mostrar la lista.
+
+### Decisión del estudiante
+
+Se aceptó la idea de crear `movieService.js`.
+Se rechazó añadir filtros por género porque está fuera de alcance en esta iteración.
+
+### Correcciones manuales
+
+La IA usó el nombre de colección `films`, pero en nuestro backend la colección se llama `movies`.
+Se corrigió manualmente.
+📋
+Lo importante no es demostrar que la IA ha trabajado mucho, sino demostrar que el estudiante ha mantenido el control.
+
+7.5 Sección COMMITS RELACIONADOS
+Esta sección indica qué commits corresponden a la iteración. Una iteración puede contener varios commits.
+
+Ejemplo:
+
+## COMMITS RELACIONADOS
+
+- `a13f8c2` - Añade servicio de películas
+- `b98d102` - Implementa listado de películas
+- `c51ab03` - Añade manejo de errores en listado
+📋
+Los hashes se añadirán al documento después de crear los commits correspondientes y se guardarán en un commit posterior de documentación. No es necesario registrar el hash de ese último commit.
+
+8. Flujo de trabajo a seguir
+Para cada iteración se seguirá este proceso:
+
+SPEC → PLAN → TEST_PLAN → CODE → TEST → REVIEW → COMMIT
+📋
+Es decir:
+
+SPEC: Escribir manualmente la especificación de la iteración. Le podéis pedir a la IA que revise el documento.
+PLAN: Elaborar un plan manualmente, pedírselo a la IA, o una mezcla de ambas. Revisarlo manualmente antes de generar el código.
+TEST_PLAN: Definir cómo se va a probar.
+CODE: Implementar la funcionalidad. Lo puede hacer la IA, manualmente o una mezcla de ambas.
+TEST: Ejecutar pruebas manuales o automáticas.
+REVIEW: Revisar manualmente los cambios realizados.
+Registrar el uso de IA en la sección AI_LOG.
+Hacer commit en el repositorio y registrarlo
+Si una prueba o la revisión detectan un problema, se corregirá y se repetirán las comprobaciones afectadas. Una iteración se considera terminada cuando cumple su SPEC, se han ejecutado y registrado las validaciones previstas, se han revisado los cambios y la documentación está actualizada. Si queda algo pendiente, debe indicarse expresamente y justificarse su aplazamiento o el cambio de alcance.
+
+Si en una iteración se detecta un bug que se ha introducido en iteraciones previas pero no se había detectado hasta ahora, lo podéis corregir en la iteración actual, haciendo un commit con la corrección o bien si no interactúa con la iteración actual y puede esperar, podéis hacer una iteración separada para corregirlo.
+
+9. Consejos básicos sobre cómo usar la IA correctamente
+Recordarle siempre a la IA el contexto
+Antes de pedir código, se recomienda usar un prompt como:
+
+Vamos con la iteración 05. Revisa PROJECT_SPEC.md y ARCHITECTURE.md
+en su versión actual y lee la sección SPEC de esta iteración.
+Propón un plan de implementación.
+No modifiques código todavía.
+Indica qué archivos habría que crear o modificar.
+📋
+Es probable que el modelo de IA ya “recuerde” de la conversación hasta ahora que los datos generales del proyecto están en PROJECT_SPEC.md y ARCHITECTURE.md, pero en conversaciones largas es recomendable especificarlo.
+
+Limitar el alcance
+Es mejor pedir cambios pequeños.
+
+Mal prompt:
+
+Hazme toda la aplicación.
+📋
+Buen prompt:
+
+Implementa solo el listado de películas siguiendo el PLAN.
+No añadas filtros ni edición.
+Modifica únicamente MovieListView.vue y movieService.js.
+📋
+Revisar el diff
+Después de usar IA, revisar siempre los cambios:
+
+git diff
+📋
+Hay que comprobar:
+
+qué archivos se han modificado;
+si la IA ha cambiado algo que no debía;
+si ha añadido código innecesario;
+si ha inventado nombres de rutas, colecciones o campos;
+si el código encaja con el resto del proyecto.
+No aceptar código que no se entiende
+El estudiante es responsable de todo el código entregado.
+
+No es una explicación válida:
+
+No sé qué hace, lo ha generado la IA.
+📋
+Sí es una explicación válida:
+
+La IA generó una primera versión, pero tuve que cambiar la llamada al backend porque usaba mal el nombre de la colección.
+📋
+10. Evaluación
+La nota no dependerá de la herramienta de IA utilizada.
+
+Se evaluará:
+
+que la aplicación funcione;
+que el código sea claro;
+que la solución esté bien organizada;
+que las iteraciones estén documentadas;
+que existan pruebas o validaciones;
+que el uso de IA sea transparente;
+que el estudiante pueda explicar el código;
+que el estudiante pueda modificar una parte razonable del proyecto durante la revisión.
+Una funcionalidad que el estudiante no pueda explicar podrá no contar completamente para la nota, aunque aparentemente funcione.

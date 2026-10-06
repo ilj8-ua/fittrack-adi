@@ -1,0 +1,77 @@
+Práctica 1. Desarrollo del backend de la aplicación web
+En esta práctica se debe desarrollar el backend de vuestra aplicación web.
+
+TODAVÍA NO SE DEBE ESCRIBIR NADA DE CÓDIGO DEL FRONTEND (NADA DE HTML/CSS para el navegador). Para probar el backend se hará con pruebas automatizadas lanzando peticiones HTTP o usando la capa de servicios que hayáis desarrollado.
+
+Lo primero que debéis hacer es elegir un tipo de backend apropiado para vuestra práctica. Tenéis dos grandes opciones:
+
+Un backend propio implementado “desde cero” en el lenguaje y plataforma que queráis. Este backend debería exponer una API REST al futuro frontend. Os recomendamos que uséis Node y Express para no cambiar de lenguaje de programación pero podéis usar lo que queráis: Java con Spring Boot, Python con Flask, Ruby on Rails, …
+Un backend en un Baas como Supabase. Este backend debe exponer una capa de servicios al frontend (funciones JavaScript que implementen los casos de uso: crearPelicula, buscarPeliculas,…).
+La elección entre una y otra opción típicamente vendrá determinada por factores como:
+
+La familiaridad con la plataforma (quizá lleváis tiempo desarrollando apps en Spring Boot y os sentís más cómodos que con Supabase)
+Las funcionalidades requeridas: Supabase funciona mejor con apps de tipo CRUD aunque también tiene funcionalidades de tiempo real pero no es apropiada para cualquier tipo de aplicación.
+Requerimientos básicos (hasta 7 puntos)
+Como normas generales:
+
+Los datos de la aplicación deben ser persistentes (almacenarse en una base de datos).
+Todas las funcionalidades deben tener pruebas automatizadas
+Casos de uso mínimos a implementar
+Para estos casos de uso mínimos elegid un único tipo de backend: Supabase o “a medida”.
+
+Usuarios: autentificación, registro, visualización y edición del perfil (cada usuario solo podrá editar el suyo, en algunas apps tendrá sentido que los perfiles de usuario sean públicos y en otras no). La autenticación se realizará con tokens JWT.
+Para el recurso principal de vuestra aplicación (recetas en una app de cocina, fotos, películas…):
+Crear un nuevo elemento del recurso principal de vuestra aplicación , pasando como parámetro un objeto con los datos
+Buscar elementos (por el/los criterios que queráis, por ejemplo buscar recetas por alguna palabra que aparece en ellas, buscar recetas por tipo de plato: “postre”, “primero”, “carne”) o listarlos todos. Los listados deben estar paginados ya que podría haber muchos elementos.
+Obtener los datos de un elemento dado su id junto con algún recurso secundario relacionado (por ejemplo una receta de cocina junto con los comentarios)
+Modificar un elemento, pasando como parámetro su id y un objeto JS con los nuevos datos
+Eliminar un elemento, sabiendo su id
+Para al menos un recurso secundario de vuestra aplicación, un listado, creación y borrado (por ejemplo listar comentarios para una receta, añadir o eliminar comentario)
+Con respecto a las operaciones a implementar:
+
+- Dependiendo de la aplicación habrá operaciones que tengan restricciones de acceso, por ejemplo seguramente no se pueden crear recetas si no se está registrado como usuario y no se pueden eliminar recetas que no hayamos dado de alta nosotros.
+- Las operaciones de creación o edición deben validar los campos del objeto que queremos crear o editar, por ejemplo que en una receta el tiempo sea un número positivo, o en una agencia de alquiler de coches que la matrícula tenga un formato válido.
+📋
+Implementación como una capa de servicios (si usáis Supabase)
+El código cliente que en el futuro haga uso de los servicios del backend no debería necesitar conocer que este está implementado en SupaBase, es decir debéis crear funciones o métodos que actúen como una “capa de servicios” aislando del API de Supabase.
+
+Por ejemplo podéis crear una función login(email, password) que acabe llamando al supabase.auth.signInWithPassword, o en el caso del crowdfunding una función o método listarProyectosMasPopulares(num) que devuelva los datos de los num proyectos más populares llamando internamente al API de BD de Supabase. Y así con todos los servicios proporcionados por el backend.
+
+Implementación como una API REST (si usáis un backend “a medida”)
+En este caso lo más típico es que el backend exponga al futuro cliente una API de tipo REST. Tendréis que decidir las rutas y los métodos HTTP asociados, algo como:
+
+POST /auth/login   #autentificarse en la app
+POST /usuarios     #registrar nuevo usuario
+GET /usuarios/:id  #obtener los datos del perfil de un usuario
+...
+📋
+Documentación del proceso de desarrollo
+Debéis documentar el proceso de desarrollo como se describe en la metodología SDD que usamos en la asignatura. No se valorará el número de páginas de la documentación, sino:
+
+Que cada iteración tenga un alcance acotado que permita implementar y comprobar sus cambios como un conjunto.
+Que las SPEC sean claras y definan el comportamiento esperado con suficiente precisión para comprobar su cumplimiento.
+Que el PLAN sea coherente con la SPEC.
+Que las pruebas comprueben los requisitos definidos en la SPEC y se documenten los resultados obtenidos.
+Que la documentación se corresponda con la implementación entregada y refleje los cambios relevantes respecto a lo previsto inicialmente, si los hay.
+Test sobre la práctica
+El día siguiente a la entrega de la práctica (13 de octubre) se realizará un mini-test de 10-15 minutos en moodle en clase de prácticas, con unas pocas preguntas sobre la práctica desarrollada, que valdrá 1 punto de los 7 “mínimos”. Por ejemplo, “¿en qué iteración has implementado la autorización con tokens JWT? ¿quién genera el token? ¿dónde se le envía al cliente?”.
+
+Para contestar la pregunta podrás consultar la entrega que has realizado, pero no se permitirá el uso de IA.
+
+Requerimiento adicional (hasta 3 puntos)
+Desarrollar la app con los dos tipos de backend, tanto Supabase como “a medida”. En un caso real no tendrá sentido tener los dos tipos de backend a la vez pero para la asignatura resultará instructivo. Para no complicar la estructura se recomienda que lo hagáis en dos proyectos totalmente distintos. El backend adicional solo es necesario que tenga autenticación y registro de usuarios y operaciones sobre el recurso principal, no es necesario CRUD sobre uno secundario, no os aportaría gran cosa pedagógicamente.
+
+Este desarrollo también debe realizarse y documentarse con SDD.
+
+Evaluación de la práctica y normas de entrega
+La fecha límite para la entrega será el lunes 12 de octubre a las 23:59. La entrega se realizará comprimiendo todos los archivos de vuestro proyecto en un .zip y subiéndolos a moodle (¡¡acordaos de NO SUBIR node_modules!!). Vuestro proyecto debería ser un repositorio git local en el que se puedan comprobar todos los commits realizados (debéis por tanto incluir el directorio .git). No es necesario que dejéis acceso al repositorio online.
+
+Resumen del baremo para la práctica:
+
+Apartado	Máximo
+Funcionalidades y corrección del backend principal	3
+Pruebas automatizadas y posibilidad de ejecutarlas	1
+Documentación del proceso SDD	2
+Test en clase	1
+Segundo backend	3
+Total	10

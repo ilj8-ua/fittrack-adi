@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lista de la compra</title>
+  <link rel="stylesheet" href="estilos.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Lista de la compra</h1>
+    <p id="mensaje" role="status">Cargando…</p>
+
+    <!-- Desactivamos los controles mientras se realiza una petición. -->
+    <fieldset id="controles" disabled>
+      <form id="form-login">
+        <h2>Iniciar sesión</h2>
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="username" required>
+        <label for="password">Contraseña</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <button type="submit">Entrar</button>
+      </form>
+
+      <section id="seccion-lista" hidden>
+        <p>Sesión de <span id="usuario"></span></p>
+        <button id="salir" type="button">Cerrar sesión</button>
+
+        <h2>Mis productos</h2>
+        <form id="form-producto">
+          <label for="nombre">Producto</label>
+          <input id="nombre" required>
+          <button type="submit">Añadir</button>
+        </form>
+
+        <p>Marca los productos que ya has comprado.</p>
+        <button id="actualizar" type="button">Actualizar lista</button>
+        <p id="lista-vacia" hidden>Tu lista está vacía.</p>
+        <ul id="lista"></ul>
+      </section>
+    </fieldset>
+    <noscript>Activa JavaScript para utilizar la lista.</noscript>
+  </main>
+</body>
+</html>

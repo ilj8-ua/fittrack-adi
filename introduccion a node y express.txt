@@ -1,0 +1,633 @@
+Introducción a Node.js y a las API REST con Express
+En la asignatura usaremos Node para poder programar el cliente y el servidor en el mismo lenguaje: JavaScript. El servidor ofrece un API de tipo REST al cliente, que implementaremos con el framework Express.
+
+1. Node.js: JavaScript fuera del navegador
+Node.js es un entorno de ejecución de JavaScript. Permite escribir servidores web, herramientas de línea de comandos y otros programas que se ejecutan fuera del navegador, incluso aplicaciones de escritorio.
+
+El lenguaje es el mismo, pero las capacidades del entorno son distintas: en el navegador podemos manipular el documento HTML; en Node podemos acceder al sistema de archivos o crear un servidor HTTP.
+
+Node permite realizar muchas operaciones de entrada/salida de forma asíncrona. Por ejemplo, mientras esperamos una consulta a una base de datos, el servidor puede atender otras peticiones. Esto no significa que cualquier código se ejecute en paralelo: un cálculo largo y síncrono también puede bloquear la atención de peticiones. Ya vimos esto en la introducción al código asíncrono en JS.
+
+Instalar Node
+Instalad la versión 24 LTS (Long Term Support) desde la página de descargas de Node.js, eligiendo las instrucciones de vuestro sistema operativo. Esta es la rama LTS más reciente al revisar estos apuntes, el 21 de septiembre de 2026.
+
+Podéis usar un instalador o un gestor de versiones si necesitáis mantener varias versiones de Node. Para estos ejemplos basta con una instalación de Node y npm.
+
+Podéis comprobar la instalación en una terminal:
+
+node --version
+npm --version
+📋
+node es el intérprete que ejecuta nuestros programas. npm permite instalar paquetes y ejecutar tareas del proyecto; se distribuye con las instalaciones habituales de Node.
+
+Crear el proyecto
+mkdir intro-node-express
+cd intro-node-express
+npm init -y
+npm pkg set type=module
+📋
+npm init -y genera un archivo package.json con valores iniciales. El último comando le añade la propiedad que usaremos para indicar que los archivos .js del proyecto son módulos ES. También podemos añadir la línea a mano
+
+#cuidado, si no es la última propiedad, debe llevar una coma detrás
+"type": "module"
+📋
+2. Módulos: import y export
+Un módulo en JS, al igual que en muchos otros lenguajes de programación, es un archivo que puede importar funcionalidades de otros módulos y exportar las suyas para que las usen otros módulos.
+
+En estos apuntes encontraremos tres tipos de importación:
+
+// Un módulo incorporado en Node: no hay que instalarlo.
+import { createServer } from 'node:http';
+
+// Un paquete externo: antes habrá que instalarlo con npm.
+import express from 'express';
+
+// Un módulo de nuestro proyecto.
+import usuariosRouter from './usuarios.js';
+📋
+El prefijo node: identifica módulos incorporados en Node. En las importaciones relativas de nuestros archivos escribiremos la extensión, por ejemplo ./usuarios.js.
+
+Hay exportaciones con nombre, que se importan entre llaves, y una posible exportación por defecto, que se importa sin llaves. Por ejemplo:
+
+// saludos.js
+export function saludar(nombre) {
+  return `Hola, ${nombre}`;
+}
+📋
+// probar-saludo.js
+import { saludar } from './saludos.js';
+
+console.log(saludar('Marte'));
+📋
+Podemos ejecutarlo con node probar-saludo.js. Más adelante veremos el uso de export default.
+
+En muchos proyectos todavía encontraréis el sistema de módulos antiguo llamado CommonJS, que usa en lugar de import/export las construcciones require() y module.exports. Es un sistema de módulos perfectamente funcional en la actualidad, y Node lo sigue soportando. En el tema principal usaremos módulos ES (los que usan import), ya que nos servirá también para el navegador. El apéndice sobre CommonJS explica la otra sintaxis.
+
+3. Paquetes, dependencias y package.json
+En Node es habitual instalar las dependencias dentro de cada proyecto. Para ver cómo funciona vamos a usar colors, un paquete que permite colorear los mensajes de la consola.
+
+Trabajamos en la carpeta del proyecto, donde ya hemos creado el archivo package.json con "type": "module" para usar import. Instalamos el paquete:
+
+npm i colors
+📋
+npm i es una abreviatura de npm install. La instalación guarda el código de los paquetes en node_modules, registra colors en dependencies y genera o actualiza package-lock.json.
+
+Usar el paquete
+Creamos el archivo colores.js:
+
+// colores.js
+import colors from 'colors/safe.js';
+
+console.log(colors.green('Saludos de Marte'));
+console.log(colors.rainbow('Todos amamos Node.js'));
+📋
+Lo ejecutamos con:
+
+node colores.js
+📋
+El primer mensaje aparecerá en verde y el segundo con letras de distintos colores, si la terminal admite colores.
+
+import nos permite acceder a la API del paquete, en este caso funciones como green o rainbow. Usamos la entrada colors/safe.js, que permite llamar a esas funciones sin modificar las cadenas de JavaScript. Véase la entrada safe de colors.
+
+Los archivos del proyecto
+Los tres elementos cumplen funciones diferentes:
+
+Elemento	Para qué sirve	¿Se guarda en Git?
+package.json	Describe el proyecto, sus tareas y los rangos de versiones admitidos.	Sí.
+package-lock.json	Registra las versiones concretas resueltas, incluidas las dependencias transitivas.	Sí.
+node_modules/	Contiene los paquetes instalados.	No.
+Añadimos node_modules/ al archivo .gitignore.
+
+En el package.json generado, conservad dependencies y añadid o ajustad scripts. Para nuestro ejemplo, el resultado puede ser este:
+
+{
+  "name": "introduccion-node-express",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node colores.js",
+    "dev": "node --watch colores.js"
+  },
+  "dependencies": {
+    "colors": "1.4.0"
+  }
+}
+📋
+private: true evita publicar accidentalmente el proyecto en npm. name y version son útiles para identificar el paquete; no son requisitos para ejecutar cualquier programa de Node. Las versiones suelen seguir el formato MAJOR.MINOR.PATCH y usan ciertos símbolos para indicar un rango de versiones válidas, por ejemplo, ^1.4.0 admitiría versiones desde 1.4.0 hasta antes de 2.0.0. En nuestro ejemplo hemos guardado 1.4.0 sin ^, de modo que pedimos esa versión exacta. El significado de ^ es más restrictivo para versiones cuyo número principal es 0.
+
+Ejecutar tareas con npm
+Los scripts se ejecutan con la instrucción npm run seguida del nombre del script. Es típico tener una forma de arrancar normalmente (start) y otra durante el desarrollo (dev). En el caso de start podemos omitir el run: npm start.
+
+Con la configuración anterior, npm start ejecuta colores.js una vez y npm run dev lo vuelve a ejecutar cuando cambia el código. Veremos la opción --watch con más detalle al crear el servidor Express.
+
+Instalar las dependencias de un proyecto existente
+Cuando obtenemos el código fuente de un proyecto (lo bajamos, clonamos su repo,…), instalamos sus dependencias con:
+
+#la "i" es de "install", también podemos poner "install"
+npm i
+📋
+Si ya incluye un package-lock.json coherente con package.json, podemos reproducir las versiones fijadas con:
+
+npm ci
+📋
+npm ci sustituye la instalación de node_modules y no modifica el archivo de bloqueo. Es habitual usarlo en integración continua y para reproducir una instalación. Véase la documentación de npm ci.
+
+Las herramientas que solo usamos durante el desarrollo se instalan con npm i --save-dev nombre-del-paquete y aparecen en devDependencies. Para omitirlas durante una instalación podemos usar npm ci --omit=dev, siempre que exista el archivo de bloqueo.
+
+Referencia: campos de package.json.
+
+3. ¡Hola servidor Node!
+Hasta ahora hemos ejecutado un programa de consola. Vamos a crear hola-node.js, un servidor web muy básico. Como hemos dicho, Node no tiene por qué ejecutar un servidor web, pero ese será su uso en el resto del tema:
+
+// hola-node.js
+import { createServer } from 'node:http';
+
+const server = createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+  res.end('Hola, soy un servidor web hecho en Node.js');
+});
+
+server.listen(3000, () => {
+  console.log('Servidor Node.js en http://localhost:3000/');
+});
+📋
+El módulo node:http forma parte de Node: a diferencia de colors, no hay que instalarlo con npm.
+
+Lo ejecutamos:
+
+node hola-node.js
+📋
+Al abrir http://localhost:3000/ veremos el saludo. El programa sigue en ejecución para atender peticiones; lo detenemos con Ctrl+C.
+
+createServer recibe una función que se ejecutará al llegar cada petición. Sus parámetros son la petición (req) y la respuesta (res). writeHead establece el estado HTTP y las cabeceras; end envía el contenido y finaliza la respuesta.
+
+Este servidor responde igual a cualquier ruta. Para distinguir por ejemplo /usuarios de /libros podríamos examinar las propiedades req.url y req.method, pero tendríamos que programar nosotros esa selección a base de condicionales. Express nos dará una forma más cómoda de hacerlo.
+
+5. ¡Hola servidor Express!
+Express es un framework web ligero y minimalista para Node. Sus piezas principales son las rutas, los middleware y las utilidades para parsear peticiones y construir respuestas HTTP. También admite motores de plantillas (fragmentos de HTML fijo con ciertas partes variables), para aquellas aplicaciones que generen HTML, aunque aquí enviaremos JSON al cliente.
+
+Añadimos Express a las dependencias del proyecto:
+
+npm install express@5
+📋
+Con express@5 pedimos una versión de la rama 5. npm la añade a dependencies y actualiza package-lock.json, igual que antes hizo con colors.
+
+Creamos el archivo hola-express.js:
+
+// hola-express.js
+import express from 'express';
+
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Hola, soy Express');
+});
+
+app.listen(3000, (error) => {
+  if (error) throw error;
+  console.log('Servidor Express en http://localhost:3000/');
+});
+📋
+Lo ejecutamos con node hola-express.js, después de detener el servidor anterior para liberar el puerto 3000.
+
+app.get('/', ...) asocia las peticiones GET / con una función. res.send envía y finaliza la respuesta; el estado será 200 si no indicamos otro. app.listen pone en marcha el servidor HTTP.
+
+Reiniciar al cambiar el código
+Un problema es que si modificamos el código el servidor que ya está en marcha no cambia. Para que “vigile” los cambios del fuente, podemos usar el switch --watch:
+
+node --watch hola-express.js
+📋
+Node reiniciará el proceso cuando cambie el archivo o alguno de los módulos que importa. Cuidado: se reinicia el servidor, pero la página del navegador no se actualiza sola, tendréis que darle a recargar.
+
+Si queremos arrancarlo mediante npm, cambiamos las tareas de package.json para que ejecuten este archivo en lugar de colores.js. Sustituimos únicamente el bloque scripts, conservando el resto del archivo:
+
+"scripts": {
+  "start": "node hola-express.js",
+  "dev": "node --watch hola-express.js"
+}
+📋
+Ahora npm start arranca el servidor y npm run dev lo arranca con reinicio automático. Más adelante, cuando nuestra aplicación principal se llame app.js, actualizaremos estos comandos para ejecutar ese archivo.
+
+6. Rutas y recursos
+El routing consiste en asociar un método HTTP y una ruta con el código que debe atender la petición.
+
+app.get('/usuarios', (req, res) => {
+  res.json([{ login: 'ana' }, { login: 'pepe89' }]);
+});
+📋
+En una API orientada a recursos es habitual organizar las operaciones así:
+
+Método y ruta	Operación habitual
+GET /usuarios	Consultar la colección.
+GET /usuarios/ana	Consultar un usuario.
+POST /usuarios	Crear un usuario.
+PUT /usuarios/ana	Reemplazar su representación.
+PATCH /usuarios/ana	Modificar parte de sus datos.
+DELETE /usuarios/ana	Eliminarlo.
+Partes variables de la ruta
+El prefijo : identifica un parámetro de ruta:
+
+app.get('/usuarios/:login', (req, res) => {
+  res.json({ login: req.params.login });
+});
+📋
+Para GET /usuarios/pepe89, req.params.login será 'pepe89'.
+
+Podemos agrupar varios métodos sobre una misma ruta con app.route. Por ejemplo, si hemos definido las funciones correspondientes:
+
+app.route('/usuarios/:login')
+  .get(obtenerUsuario)
+  .put(reemplazarUsuario)
+  .delete(eliminarUsuario);
+📋
+La agrupación no cambia cómo funcionan las rutas; evita repetir su texto. Referencia: routing en Express.
+
+7. Middleware: procesar la petición por etapas
+Un middleware es una función que participa en el procesamiento de una petición. Puede consultar o modificar req y res, responder, o pasar el control al siguiente paso mediante next().
+
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.originalUrl}`);
+  next();
+});
+📋
+Este middleware registra cada petición en la consola y continúa. Si no responde ni llama a next(), la petición se queda pendiente.
+
+Los manejadores de rutas también son middleware. Podemos pasar varios a una misma ruta:
+
+app.get('/usuarios/:login', (req, res, next) => {
+  console.log(`Consulta del usuario ${req.params.login}`);
+  next();
+}, (req, res) => {
+  res.json({ login: req.params.login });
+});
+📋
+El orden de registro importa. Normalmente colocaremos primero los middleware generales, después las rutas y al final las respuestas para rutas desconocidas y los manejadores de errores.
+
+app.use('/usuarios', middleware) limita un middleware a ese prefijo de ruta. También podemos registrar middleware en un router.
+
+Después de enviar una respuesta, normalmente no debemos llamar a next(). Si hemos respondido dentro de un if, usamos return para salir de la función y evitar que el código siguiente intente responder otra vez.
+
+8. Leer la petición
+Hay tres lugares distintos que no debemos confundir:
+
+Información	Ejemplo	Dónde se consulta
+Parámetro de ruta	/usuarios/ana, con ruta /usuarios/:login	req.params.login
+Parámetro de consulta	/usuarios?nombre=Ana	req.query.nombre
+Cuerpo JSON	{"login":"ana","nombre":"Ana"}	req.body, después de analizarlo.
+Los parámetros de consulta no forman parte del patrón de ruta: app.get('/usuarios', ...) también atiende /usuarios?nombre=Ana.
+
+Los datos de entrada necesitan validación. Por ejemplo, un parámetro de consulta repetido puede producir un array; no debemos suponer que cualquier valor de req.query es una cadena. Referencia: objeto de petición.
+
+Recibir JSON desde el cuerpo de la petición
+En algunas peticiones REST podemos enviar datos en el cuerpo de la petición, por defecto Express no parsea el cuerpo, de modo que antes de las rutas en los que lo usemos necesitamos registrar un middleware especial que lo hace:
+
+app.use(express.json());
+📋
+Este middleware analiza el cuerpo cuando corresponde al tipo de contenido esperado, por defecto application/json, y deja el resultado en req.body. No convierte automáticamente cualquier petición ni valida los campos de nuestra aplicación.
+
+app.post('/saludos', (req, res) => {
+  const nombre = req.body?.nombre;
+
+  if (typeof nombre !== 'string' || nombre.trim() === '') {
+    return res.status(400).json({ error: 'El nombre es obligatorio' });
+  }
+
+  res.json({ mensaje: `Hola, ${nombre.trim()}` });
+});
+📋
+?. permite leer la propiedad sin fallar si req.body es undefined o null. Aun así, comprobamos el tipo y el contenido de nombre.
+
+req.body no contiene por defecto el cuerpo como texto. En Express 5 puede ser undefined si no se ha analizado. Para formularios podemos usar express.urlencoded({ extended: false }); para texto, express.text(); para datos binarios, express.raw(). Referencia: middleware incorporado en Express.
+
+9. Construir la respuesta
+Para una API JSON usaremos principalmente res.json y res.status.
+
+Los siguientes ejemplos son respuestas alternativas; no se ejecutan uno detrás de otro en una misma petición:
+
+// Texto. send() finaliza la respuesta.
+res.type('text/plain').send('Hola');
+
+// Objeto o array convertido a JSON, con el Content-Type adecuado.
+res.json({ login: 'ana', nombre: 'Ana' });
+
+// Recurso creado y dirección donde consultarlo.
+res.status(201)
+  .location('/usuarios/ana')
+  .json({ login: 'ana', nombre: 'Ana' });
+
+// Respuesta sin cuerpo.
+res.status(204).end();
+
+// Error de la petición.
+res.status(400).json({ error: 'Falta el nombre' });
+📋
+res.status y res.location preparan la respuesta, pero no la envían. res.json, res.send y res.end la finalizan. res.send también admite objetos y arrays; usaremos res.json para expresar claramente que queremos JSON.
+
+Para una cabecera arbitraria podemos usar res.set('X-Ejemplo', 'valor'); res.header es equivalente. Dejaremos que Express calcule cabeceras como Content-Length.
+
+Si necesitamos enviar un archivo, res.sendFile requiere una ruta absoluta o la opción root. En módulos ES con la versión de Node elegida podemos escribir, si existe ese archivo junto al módulo:
+
+res.sendFile('ayuda.html', { root: import.meta.dirname });
+📋
+Referencia: objeto de respuesta de Express.
+
+10. Una pequeña API organizada en módulos
+Vamos a implementar una colección de usuarios con consulta, creación y eliminación. Mantendremos los datos en memoria para concentrarnos en HTTP y Express.
+
+Los cambios se pierden al reiniciar el servidor, también cuando node --watch lo reinicia. Más adelante podríamos sustituir el array por una base de datos.
+
+La estructura será:
+
+introduccion-node-express/
+├── package.json
+├── package-lock.json
+├── app.js
+└── usuarios.js
+📋
+El router de usuarios
+Un router agrupa rutas y middleware. Lo montaremos bajo el prefijo /usuarios, por lo que dentro de él escribimos / y /:login.
+
+// usuarios.js
+import express from 'express';
+
+const router = express.Router();
+const usuarios = [{ login: 'ana', nombre: 'Ana' }];
+
+router.get('/', (req, res) => {
+  const nombre = req.query.nombre;
+
+  if (nombre !== undefined && typeof nombre !== 'string') {
+    return res.status(400).json({ error: 'nombre debe ser una cadena' });
+  }
+
+  const resultado = nombre === undefined
+    ? usuarios
+    : usuarios.filter((usuario) => usuario.nombre === nombre);
+
+  res.json(resultado);
+});
+
+router.get('/:login', (req, res) => {
+  const usuario = usuarios.find((usuario) => usuario.login === req.params.login);
+
+  if (!usuario) {
+    return res.status(404).json({ error: 'Usuario no encontrado' });
+  }
+
+  res.json(usuario);
+});
+
+router.post('/', (req, res) => {
+  if (!req.is('application/json')) {
+    return res.status(415).json({ error: 'Se requiere application/json' });
+  }
+
+  const login = req.body?.login;
+  const nombre = req.body?.nombre;
+
+  if (typeof login !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(login)) {
+    return res.status(400).json({
+      error: 'login debe contener letras sin acentos, números, guiones o guiones bajos'
+    });
+  }
+
+  if (typeof nombre !== 'string' || nombre.trim() === '') {
+    return res.status(400).json({ error: 'El nombre es obligatorio' });
+  }
+
+  if (usuarios.some((usuario) => usuario.login === login)) {
+    return res.status(409).json({ error: 'Ya existe ese login' });
+  }
+
+  const nuevoUsuario = { login, nombre: nombre.trim() };
+  usuarios.push(nuevoUsuario);
+
+  res.status(201).location(`/usuarios/${login}`).json(nuevoUsuario);
+});
+
+router.delete('/:login', (req, res) => {
+  const indice = usuarios.findIndex((usuario) => usuario.login === req.params.login);
+
+  if (indice === -1) {
+    return res.status(404).json({ error: 'Usuario no encontrado' });
+  }
+
+  usuarios.splice(indice, 1);
+  res.status(204).end();
+});
+
+export default router;
+📋
+Validamos solo los campos necesarios para este ejemplo. Creamos el objeto que vamos a guardar a partir de esos campos, y respondemos 409 Conflict si el identificador ya existe.
+
+La aplicación principal
+// app.js
+import express from 'express';
+import usuariosRouter from './usuarios.js';
+
+const app = express();
+
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.originalUrl}`);
+  next();
+});
+
+app.use(express.json());
+app.use('/usuarios', usuariosRouter);
+
+// Se ejecuta si ninguna ruta anterior ha respondido.
+app.use((req, res) => {
+  res.status(404).json({ error: 'Ruta no encontrada' });
+});
+
+// Los manejadores de errores tienen cuatro parámetros y van al final.
+app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'El cuerpo no contiene JSON válido' });
+  }
+
+  // Conservamos los errores 4xx del procesamiento de la petición.
+  if (Number.isInteger(err.status) && err.status >= 400 && err.status < 500) {
+    return res.status(err.status).json({ error: 'No se puede procesar la petición' });
+  }
+
+  console.error(err);
+  res.status(500).json({ error: 'Error interno del servidor' });
+});
+
+app.listen(3000, (error) => {
+  if (error) throw error;
+  console.log('API en http://localhost:3000/usuarios');
+});
+📋
+Ejecutamos npm run dev. Una petición a /usuarios/ana llegará al router como /:login. No debemos repetir el prefijo escribiendo /usuarios/:login dentro de ese router.
+
+Con esto tenemos una aplicación que responde realmente a las peticiones: imprimir un mensaje con console.log permite verlo en el servidor, pero no envía una respuesta al cliente.
+
+11. Errores y operaciones asíncronas
+Hay que distinguir los errores esperables de una operación, como un usuario inexistente, de los fallos inesperados del servidor.
+
+En nuestro ejemplo respondemos directamente con 404 cuando el usuario no existe. Para derivar un fallo al manejador de errores podemos usar next(error); dentro de un manejador síncrono Express también captura las excepciones lanzadas con throw.
+
+El manejador de errores tiene cuatro parámetros: (err, req, res, next). Mantenemos esa firma incluso si no necesitamos todos. Registrarlo al final permite recibir los errores de los pasos anteriores.
+
+La respuesta 404 para una ruta desconocida es un middleware normal: que no coincida ninguna ruta no genera por sí solo una excepción.
+
+async / await en Express 5
+Si un manejador devuelve una promesa que se rechaza, Express 5 pasa el error al manejador de errores. Esto incluye el rechazo de una operación que esperamos con await dentro de una función async. Referencia: gestión de errores en Express.
+
+Por ejemplo, este programa independiente lee un archivo sin bloquear la espera de otras operaciones de entrada/salida:
+
+// asincrono.js
+import express from 'express';
+import { readFile } from 'node:fs/promises';
+
+const app = express();
+
+app.get('/mensaje', async (req, res) => {
+  const mensaje = await readFile(new URL('./mensaje.txt', import.meta.url), 'utf8');
+  res.type('text/plain').send(mensaje);
+});
+
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  console.error(err);
+  res.status(500).json({ error: 'No se ha podido leer el mensaje' });
+});
+
+app.listen(3000, (error) => {
+  if (error) throw error;
+  console.log('Ejemplo asíncrono en http://localhost:3000/mensaje');
+});
+📋
+Creamos mensaje.txt en la misma carpeta con un saludo, detenemos el otro servidor y ejecutamos node asincrono.js. Si falta el archivo, la promesa se rechaza y Express envía el error al último middleware.
+
+No necesitamos un try/catch solo para reenviar ese rechazo. Sí puede tener sentido para recuperarnos de un fallo o darle un tratamiento específico. Los errores de callbacks independientes, como un setTimeout, no se capturan automáticamente por declarar async la función exterior; deben comunicarse a Express, por ejemplo mediante next(error).
+
+En la respuesta al cliente enviamos un mensaje controlado; la información técnica del fallo se registra en el servidor.
+
+12. Probar la API
+Volvemos a arrancar app.js con npm run dev. Abrir una URL en el navegador sirve para probar consultas GET; para otros métodos usaremos curl u otro cliente HTTP.
+
+Los comandos siguientes están escritos para Bash o Zsh, como las terminales habituales de Linux y macOS. En PowerShell se puede usar Invoke-RestMethod; las reglas para entrecomillar JSON pueden variar respecto a estos ejemplos.
+
+Consultar usuarios
+curl -i http://localhost:3000/usuarios
+curl -i http://localhost:3000/usuarios/ana
+curl -i 'http://localhost:3000/usuarios?nombre=Ana'
+📋
+-i muestra también el estado y las cabeceras de la respuesta.
+
+Crear un usuario
+curl -i -X POST http://localhost:3000/usuarios \
+  -H 'Content-Type: application/json' \
+  -d '{"login":"pepe89","nombre":"Pepe"}'
+📋
+Recibiremos 201 Created, la cabecera Location: /usuarios/pepe89 y el usuario creado. Repetir la petición dará 409 Conflict.
+
+Consultarlo y eliminarlo
+curl -i http://localhost:3000/usuarios/pepe89
+curl -i -X DELETE http://localhost:3000/usuarios/pepe89
+curl -i http://localhost:3000/usuarios/pepe89
+📋
+Las respuestas serán 200, 204 sin cuerpo y 404, respectivamente.
+
+Comprobar errores de entrada
+# Falta el campo nombre: 400.
+curl -i -X POST http://localhost:3000/usuarios \
+  -H 'Content-Type: application/json' \
+  -d '{"login":"pepe89"}'
+
+# JSON mal formado: 400, atendido por el manejador de errores.
+curl -i -X POST http://localhost:3000/usuarios \
+  -H 'Content-Type: application/json' \
+  -d '{'
+
+# Tipo de contenido no admitido por nuestra ruta: 415.
+curl -i -X POST http://localhost:3000/usuarios \
+  -H 'Content-Type: text/plain' \
+  -d 'Hola'
+📋
+Apéndice. Leer y ejecutar ejemplos con require (CommonJS)
+La documentación de Express también muestra ejemplos con require. Esta sintaxis pertenece a CommonJS, el sistema de módulos tradicional de Node, que sigue siendo válido. Usarlo no significa que el ejemplo sea de una versión antigua de Express: el sistema de módulos y la versión del framework son decisiones independientes.
+
+En CommonJS, require(...) carga un módulo y devuelve lo que este exporta. module.exports permite definir ese valor desde el módulo.
+
+Equivalencias habituales
+Operación	Módulos ES	CommonJS
+Cargar Express	import express from 'express';	const express = require('express');
+Obtener una función de un módulo de Node	import { createServer } from 'node:http';	const { createServer } = require('node:http');
+Exportar un router	export default router;	module.exports = router;
+Cargar nuestro router	import router from './usuarios.js';	const router = require('./usuarios.cjs');
+Exportar una función con nombre	export { saludar };	module.exports = { saludar };
+Obtener esa función	import { saludar } from './saludos.js';	const { saludar } = require('./saludos.cjs');
+La tabla muestra cómo escribir nuestros ejemplos en cada sistema. No es una regla de sustitución universal: al usar un paquete, hay que comprobar qué exporta y cómo indica su documentación que debe cargarse. En CommonJS, las llaves de const { saludar } = ... son desestructuración del objeto devuelto por require.
+
+Ejecutar CommonJS dentro de nuestro proyecto
+Nuestro package.json contiene "type": "module". Por tanto, si pegamos require(...) en un archivo .js, Node lo tratará como un módulo ES y encontraremos un error como require is not defined in ES module scope.
+
+Para probar un ejemplo CommonJS sin cambiar el resto del proyecto, lo guardamos con extensión .cjs. Por ejemplo:
+
+// hola-express.cjs
+const express = require('express');
+
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Hola, soy Express con CommonJS');
+});
+
+app.listen(3000, (error) => {
+  if (error) throw error;
+  console.log('Servidor Express en http://localhost:3000/');
+});
+📋
+Después de detener cualquier otro servidor que use el puerto 3000, ejecutamos:
+
+node hola-express.cjs
+📋
+Las rutas, los middleware y las respuestas de Express funcionan igual.
+
+Exportar y cargar un router
+El router se puede escribir así:
+
+// usuarios.cjs
+const express = require('express');
+const router = express.Router();
+
+router.get('/:login', (req, res) => {
+  res.json({ login: req.params.login });
+});
+
+module.exports = router;
+📋
+Y la aplicación que lo carga:
+
+// app-commonjs.cjs
+const express = require('express');
+const usuariosRouter = require('./usuarios.cjs');
+
+const app = express();
+app.use('/usuarios', usuariosRouter);
+
+app.listen(3000, (error) => {
+  if (error) throw error;
+  console.log('Ejemplo CommonJS en http://localhost:3000/usuarios/ana');
+});
+📋
+Ejecutamos node app-commonjs.cjs. Este ejemplo solo devuelve el login recibido, para ilustrar la carga del router; la API con almacenamiento en memoria sigue estando en app.js y usuarios.js.
+
+¿Qué determina el sistema de módulos?
+Archivo o configuración	Sistema
+Archivo .mjs	Módulos ES.
+Archivo .cjs	CommonJS.
+Archivo .js con "type": "module" en el package.json aplicable	Módulos ES.
+Archivo .js con "type": "commonjs" en el package.json aplicable	CommonJS.
+Si todo un proyecto va a usar CommonJS, podemos declararlo con "type": "commonjs" y usar .js. En el proyecto de estos apuntes mantendremos "type": "module" y reservaremos .cjs para los ejemplos del apéndice. Así no cambia la interpretación de los archivos del tema principal.
+
+Referencias: CommonJS en Node.js y cómo determina Node el sistema de módulos.
