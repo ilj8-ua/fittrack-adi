@@ -6,3 +6,4 @@ Thumbs.db
 backend-rest/data/*.db
 backend-rest/data/*.db-journal
 backend-rest/data/*.sqlite-journal
+*.zip
